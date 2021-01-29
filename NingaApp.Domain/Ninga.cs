@@ -17,5 +17,6 @@ namespace NingaApp.Domain
 
         // public int BattleId { get; set; }
         public List<NingaBattle>  NingaBattles { get; set; }
+        public SecretIdentity  SecretIdentity { get; set; }
     }
 }
