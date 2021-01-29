@@ -11,6 +11,7 @@ namespace NingaApp.Domain
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public List<Ninga> Ningas { get; set; }
+        // public List<Ninga> Ningas { get; set; }
+        public List<NingaBattle>  NingaBattles { get; set; }
     }
 }
