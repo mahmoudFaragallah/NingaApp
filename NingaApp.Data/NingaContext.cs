@@ -17,6 +17,7 @@ namespace NingaApp.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseLoggerFactory(factory)
+                .EnableSensitiveDataLogging(true)
                           .UseSqlServer("Server=DESKTOP-B1VG1L9\\SQLEXPRESS;Database=NingaDB;Trusted_Connection=True;");
         }
 
