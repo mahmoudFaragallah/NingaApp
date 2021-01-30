@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace WebApp
 {
+
     public class Program
     {
         public static NingaContext _context = new NingaContext();
@@ -28,8 +30,95 @@ namespace WebApp
             // AddSomeNingas();
             //DeleteWhileTracked();
             // DeleteWhileNotTracked();
-            DeleteMany();
+            // DeleteMany();
+            // AddChildToExistingObjectWhileTracked();
+            // AddChildToExistingObjectWhileNotTracked();
+            // InsertNewPKFKGraph();
+            // EagerLoadNingaWithQuotes();
+            // ProjectSomeProperties();
+            //FilterWithRelatedData();
+            ModifyingRelatedDataWhenNotTracked();
             CreateHostBuilder(args).Build().Run();
+        }
+
+        private static void ModifyingRelatedDataWhenNotTracked()
+        {
+            var ninga = _context.Ningas.Include(e => e.Quotes).FirstOrDefault();
+            var quote = ninga.Quotes[0];
+            quote.Text += "Did you hear that?";
+            using var newContext = new NingaContext();
+            // newContext.Quotes.Update(quote);
+            newContext.Entry(quote).State = EntityState.Modified;
+            newContext.SaveChanges();
+        }
+
+        private static void FilterWithRelatedData()
+        {
+            var ninga = _context.Ningas.Where(e => e.Quotes.Any(e => e.Text.Contains("Not"))).ToList();
+        }
+
+        public struct IdAndName
+        {
+            public IdAndName(int id, string name)
+            {
+                Id = id;
+                Name = name;
+            }
+            public int Id;
+            public string Name;
+        }
+        private static void ProjectSomeProperties()
+        {
+            var someProperties = _context.Ningas.Select(s => new 
+            { 
+                s.Id, 
+                s.Name, 
+                HappyQuote = s.Quotes.Where(q=>q.Text.Contains("NOT"))
+            }).ToList();
+            // var someProperties = _context.Ningas.Select(s => new IdAndName(s.Id, s.Name)).ToList();
+        }
+
+        private static void EagerLoadNingaWithQuotes()
+        {
+            var NingaWithQuotes = _context.Ningas.Include(e => e.Quotes)
+                                                  .Include(e => e.SecretIdentity)
+                                                  .FirstOrDefault(e => e.Name.Contains("AIZ"));
+        }
+
+        private static void AddChildToExistingObjectWhileNotTracked()
+        {
+            var ninga = _context.Ningas.First();
+            ninga.Quotes.Add(new NingaApp.Domain.Quote
+            {
+                Text = "Now try another Not Tracked Method"
+            });
+            using (var newContext = new NingaContext())
+            {
+                newContext.Ningas.Add(ninga);
+                //_context.SaveChanges();
+            }
+        }
+
+        private async static void InsertNewPKFKGraph()
+        {
+            var Ninga = new NingaApp.Domain.Ninga
+            {
+                Name = "AIZ",
+                Quotes = new List<NingaApp.Domain.Quote> {
+                    new NingaApp.Domain.Quote {
+                        Text = "I've come to save you"
+                    }
+                }
+            };
+            _context.Ningas.Add(Ninga);
+            await _context.SaveChangesAsync();
+        }
+
+        private static async void AddChildToExistingObjectWhileTracked()
+        {
+            var ninga = _context.Ningas.First();
+            ninga.Quotes.Add(new NingaApp.Domain.Quote { Text = "I bet you're happy that I've saved you" });
+            _ = await _context.SaveChangesAsync();
         }
 
         private async static void DeleteMany()
@@ -37,7 +126,7 @@ namespace WebApp
             var ningas = _context.Ningas.Where(s => s.Name.Contains("A"));
             _context.Ningas.RemoveRange(ningas);
             // alternative: _context.RemoveRange(ningas);
-            _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
         }
 
         private static void DeleteWhileNotTracked()

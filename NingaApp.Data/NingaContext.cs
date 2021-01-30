@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Console;
 using NingaApp.Domain;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Text;
 
 namespace NingaApp.Data
@@ -16,9 +17,11 @@ namespace NingaApp.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            // var connectionString = ConfigurationManager.ConnectionStrings["NingaConnection"].ToString(); 
             optionsBuilder.UseLoggerFactory(factory)
-                .EnableSensitiveDataLogging(true)
+                          .EnableSensitiveDataLogging(true)
                           .UseSqlServer("Server=DESKTOP-B1VG1L9\\SQLEXPRESS;Database=NingaDB;Trusted_Connection=True;");
+                          //.UseSqlServer(connectionString);
         }
 
         // Configure bridge entity -NingaBattle- relationship 
@@ -28,6 +31,9 @@ namespace NingaApp.Data
                 .HasKey(s => new { s.NingaId, s.BattleId });
         }
 
-        public static readonly ILoggerFactory factory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+        public static readonly ILoggerFactory factory = LoggerFactory.Create(builder => 
+        { 
+            builder.AddConsole(); 
+        });
     }
 }
