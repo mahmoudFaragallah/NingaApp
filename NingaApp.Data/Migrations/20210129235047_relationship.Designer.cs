@@ -10,23 +10,23 @@ using NingaApp.Data;
 namespace NingaApp.Data.Migrations
 {
     [DbContext(typeof(NingaContext))]
-    [Migration("20210129212707_initial")]
-    partial class initial
+    [Migration("20210129235047_relationship")]
+    partial class relationship
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityColumns()
+                .HasAnnotation("ProductVersion", "3.1.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.2");
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("NingaApp.Domain.Battle", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
@@ -47,19 +47,29 @@ namespace NingaApp.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<int>("BattleId")
-                        .HasColumnType("int");
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
+                    b.ToTable("Ningas");
+                });
+
+            modelBuilder.Entity("NingaApp.Domain.NingaBattle", b =>
+                {
+                    b.Property<int>("NingaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BattleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("NingaId", "BattleId");
+
                     b.HasIndex("BattleId");
 
-                    b.ToTable("Ningas");
+                    b.ToTable("NingaBattle");
                 });
 
             modelBuilder.Entity("NingaApp.Domain.Quote", b =>
@@ -67,7 +77,7 @@ namespace NingaApp.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("NingaId")
                         .HasColumnType("int");
@@ -82,11 +92,38 @@ namespace NingaApp.Data.Migrations
                     b.ToTable("Quotes");
                 });
 
-            modelBuilder.Entity("NingaApp.Domain.Ninga", b =>
+            modelBuilder.Entity("NingaApp.Domain.SecretIdentity", b =>
                 {
-                    b.HasOne("NingaApp.Domain.Battle", null)
-                        .WithMany("Ningas")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("NingaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RealName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NingaId")
+                        .IsUnique();
+
+                    b.ToTable("SecretIdentity");
+                });
+
+            modelBuilder.Entity("NingaApp.Domain.NingaBattle", b =>
+                {
+                    b.HasOne("NingaApp.Domain.Battle", "Battle")
+                        .WithMany("NingaBattles")
                         .HasForeignKey("BattleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NingaApp.Domain.Ninga", "Ninga")
+                        .WithMany("NingaBattles")
+                        .HasForeignKey("NingaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -98,18 +135,15 @@ namespace NingaApp.Data.Migrations
                         .HasForeignKey("NingaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Ninga");
                 });
 
-            modelBuilder.Entity("NingaApp.Domain.Battle", b =>
+            modelBuilder.Entity("NingaApp.Domain.SecretIdentity", b =>
                 {
-                    b.Navigation("Ningas");
-                });
-
-            modelBuilder.Entity("NingaApp.Domain.Ninga", b =>
-                {
-                    b.Navigation("Quotes");
+                    b.HasOne("NingaApp.Domain.Ninga", null)
+                        .WithOne("SecretIdentity")
+                        .HasForeignKey("NingaApp.Domain.SecretIdentity", "NingaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
