@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using NingaApp.Domain;
 using System;
 using System.Collections.Generic;
@@ -14,8 +16,8 @@ namespace NingaApp.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(
-                "Server=DESKTOP-B1VG1L9\\SQLEXPRESS;Database=NingaDB;Trusted_Connection=True;");
+            optionsBuilder.UseLoggerFactory(factory)
+                          .UseSqlServer("Server=DESKTOP-B1VG1L9\\SQLEXPRESS;Database=NingaDB;Trusted_Connection=True;");
         }
 
         // Configure bridge entity -NingaBattle- relationship 
@@ -24,5 +26,7 @@ namespace NingaApp.Data
             modelBuilder.Entity<NingaBattle>()
                 .HasKey(s => new { s.NingaId, s.BattleId });
         }
+
+        public static readonly ILoggerFactory factory = LoggerFactory.Create(builder => { builder.AddConsole(); });
     }
 }
